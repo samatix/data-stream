@@ -1,11 +1,13 @@
-from django.conf import settings
+from time import time
 import logging
-
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
-
 from .exceptions import ClientError
 
 logger = logging.getLogger(__name__)
+
+# Variable to measure the websockets latency
+latency = 0
+
 
 class DataConsumer(AsyncJsonWebsocketConsumer):
     """
@@ -38,7 +40,7 @@ class DataConsumer(AsyncJsonWebsocketConsumer):
         Called when we get a request to activate or not the realtime.
         Channels will JSON-decode the payload for us and pass it as the first argument.
         """
-
+        start = time()
         # Messages will have a "command" key we can switch on
         command = content.get("command", None)
         logger.debug("Command Received + " + str(content))
@@ -69,6 +71,7 @@ class DataConsumer(AsyncJsonWebsocketConsumer):
         """
         Called by receive_json when someone sent a join command.
         """
+        start = time()
         logger.debug("Group Added on channel " + self.channel_name + " and group realtime_" +
                      str(self.scope["user"].id))
         # Send a realtime activation message
@@ -76,23 +79,27 @@ class DataConsumer(AsyncJsonWebsocketConsumer):
             "realtime_" + str(self.scope["user"].id),
             self.channel_name
         )
+        logger.debug("Elapsed time to subscribe to realtime {}.".format(time() - start))
 
     async def unsubscribe_to_realtime(self):
         """
         Called by receive_json when someone sent a leave command.
         """
+        start = time()
         logger.debug("Group Discarded on channel " + self.channel_name + " and group realtime_" +
                      str(self.scope["user"].id))
         await self.channel_layer.group_discard(
             "realtime_" + str(self.scope["user"].id),
             self.channel_name
         )
+        logger.debug("Elapsed time to unsubscribe from realtime {}.".format(time() - start))
 
-    async def data_update(self, content):
+    async def data_send(self, content):
         """
         Called when someone has messaged our chat.
         """
-        logger.debug("Data update command received : "+ str(content))
+        logger.debug("Data update command received : " + str(content))
+        start = time()
         # Send a message down to the client
         await self.send_json(
             {
@@ -100,16 +107,6 @@ class DataConsumer(AsyncJsonWebsocketConsumer):
                 "content": content,
             },
         )
-
-    async def data_new(self, content):
-        """
-        Called when someone has messaged our chat.
-        """
-        logger.debug("Data update command received : " + str(content))
-        # Send a message down to the client
-        await self.send_json(
-            {
-                "action": "new",
-                "content": content,
-            },
-        )
+        global latency
+        latency = time() - start
+        logger.debug("Elapsed time to send data {}.".format(latency))

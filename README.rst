@@ -68,7 +68,7 @@ Whenever the client asks to activate realtime, it sends a WebSocket text frame w
 a JSON encoded command to create a new group within the channel that is linked to the connected user.
 
 When a new update is triggered from the save method overload within the model, a message
-is sent (if the user is logged) 
+is sent (if the user is logged)
 
 
 Next Actions

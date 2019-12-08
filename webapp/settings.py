@@ -16,7 +16,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-##### Channels-specific settings
+# Channels Settings
 
 redis_host = os.environ.get('REDIS_HOST', 'localhost')
 
@@ -36,37 +36,11 @@ CHANNEL_LAYERS = {
 ASGI_APPLICATION = 'webapp.routing.application'
 
 
-##### Project-specific settings
-
-NOTIFY_USERS_ON_ENTER_OR_LEAVE_ROOMS = True
-
-MSG_TYPE_MESSAGE = 0  # For standard messages
-MSG_TYPE_WARNING = 1  # For yellow messages
-MSG_TYPE_ALERT = 2  # For red & dangerous alerts
-MSG_TYPE_MUTED = 3  # For just OK information that doesn't bother users
-MSG_TYPE_ENTER = 4  # For just OK information that doesn't bother users
-MSG_TYPE_LEAVE = 5  # For just OK information that doesn't bother users
-
-MESSAGE_TYPES_CHOICES = (
-    (MSG_TYPE_MESSAGE, 'MESSAGE'),
-    (MSG_TYPE_WARNING, 'WARNING'),
-    (MSG_TYPE_ALERT, 'ALERT'),
-    (MSG_TYPE_MUTED, 'MUTED'),
-    (MSG_TYPE_ENTER, 'ENTER'),
-    (MSG_TYPE_LEAVE, 'LEAVE'),
-)
-
-MESSAGE_TYPES_LIST = [
-    MSG_TYPE_MESSAGE,
-    MSG_TYPE_WARNING,
-    MSG_TYPE_ALERT,
-    MSG_TYPE_MUTED,
-    MSG_TYPE_ENTER,
-    MSG_TYPE_LEAVE,
-]
+# Project Settings
 
 
-##### Normal Django settings
+
+# Django Settings
 
 # SECURITY WARNING: keep the secret key used in production secret! And don't use debug=True in production!
 SECRET_KEY = 'imasecret'
@@ -81,6 +55,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
     'channels',
     'generic',
 ]
@@ -152,9 +128,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
+    os.path.join(BASE_DIR, 'static')
 ]
 
+# Logging configuration
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -188,4 +165,25 @@ LOGGING = {
             "propagate": True,
         }
     },
+}
+
+# Rest API Configuration
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication'
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissions'
+    ],
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+        'rest_framework_datatables.renderers.DatatablesRenderer',
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'rest_framework_datatables.filters.DatatablesFilterBackend',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework_datatables.pagination.DatatablesPageNumberPagination',
+    'PAGE_SIZE': 20,
 }

@@ -8,15 +8,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def broadcast(user, content, notification_type="new"):
+def broadcast(user, content):
     # Add condition if user has subscribed in Redis
     channel_layer = channels.layers.get_channel_layer()
     logger.info("sending socket to : " + 'realtime_' + str(user))
-    logger.info("Type : " + 'realtime_' + str(notification_type))
     logger.info("Content : " + str(content))
     async_to_sync(channel_layer.group_send)(
         'realtime_' + str(user), {
-            "type": notification_type,
+            "type": "data.send",
             "content": json.dumps(content),
         })
 
@@ -43,19 +42,20 @@ class Data(models.Model):
 
     def save(self, *args, **kwargs):
         logger.info("Saving new data")
-        content = {
-            'a': self.a,
-            'x': self.x,
-            'information': self.information
-        }
         if not self.id:
             # Go through a serializer
             notification_type = "data.new"
         else:
             notification_type = "data.update"
+        content = {
+            'a': self.a,
+            'x': self.x,
+            'information': self.information,
+            'type': notification_type
+        }
 
         # Send notification to opened channels
-        broadcast(self.user.id, content, notification_type)
+        broadcast(self.user.id, content)
         # Save the data
         super(Data, self).save(*args, **kwargs)
 
