@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Realtime Example{% endblock %}
+{% block header_text %}Realtime Example{% endblock %}
+
+{% block content %}
+    <ul class="rooms">
+        {% for datum in data %}
+            <li class="room-link" data-room-id="{{ datum.id }}">{{ datum.id }}; {{ datum.a }}: {{ datum.x }}; {{ datum.information }}</li>
+        {% empty %}
+            <p class="empty">No data found. Maybe add some in the <a href="{% url 'admin:index' %}">admin</a>?</p>
+        {% endfor %}
+    </ul>
+
+    <div id="data">
+    </div>
+
+{% endblock %}
+
+
+{% block extra_body %}
+    <script>
+        $(function () {
+            // Correctly decide between ws:// and wss://
+            var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+            var ws_path = ws_scheme + '://' + window.location.host + "/data/stream/";
+            console.log("Connecting to " + ws_path);
+            var socket = new ReconnectingWebSocket(ws_path);
+            console.log(socket);
+
+            // Handle incoming messages
+            socket.onmessage = function (message) {
+                // Decode the JSON
+                console.log("Got websocket message " + message.data);
+                var data = JSON.parse(message.data);
+                // Handle errors
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                // Handle joining
+                if (data.content) {
+                    $("#data").append(data.content);
+                } else {
+                    console.log("Cannot handle message!");
+                }
+            };
+
+            // Room join/leave
+            $("#realtime").click(function () {
+                var realtime = $(this).attr("data-realtime-active");
+                if (realtime == "True") {
+                    console.log("Realtime Deactivation");
+                    // Deactivate room
+                    $(this).removeClass("active");
+                    socket.send(JSON.stringify({
+                        "command": "unsubscribe"
+                    }));
+                    $(this).attr("data-realtime-active", "False");
+                } else {
+                    console.log("Realtime Activation");
+                    $(this).addClass("active");
+                    socket.send(JSON.stringify({
+                        "command": "subscribe"
+                    }));
+                    $(this).attr("data-realtime-active", "True");
+                }
+            });
+
+            // Helpful debugging
+            socket.onopen = function () {
+                console.log("Connected to realtime socket");
+            };
+            socket.onclose = function () {
+                console.log("Disconnected from realtime socket");
+            }
+        });
+    </script>
+{% endblock %}
