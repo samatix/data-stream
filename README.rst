@@ -12,7 +12,8 @@ The user gets to see only his own orders through the authentication layer.
 
 After logging to the main page, two datatables are present :
 
-** First Datatable :**
+First Datatable :
+~~~~~~~~~~~~~~~~~
 
 The first tabls shows the list of user's orders. The data is reading from the Rest API /api/data/?format=datatables
 and loads only the needed data in the page because of the setting ("deferRender": true). When an update
@@ -24,7 +25,8 @@ Datatable framework when the data are served from a a server side.
 .. image:: ./pictures/first_datatable.png
 
 
-** Second Datatable :**
+Second Datatable :
+~~~~~~~~~~~~~~~~~~
 
 The second datatable is a monitoring screen filled only when the realtime is activated through the green button on top.
 It shows all the new datae ntries that are received through the websocket channels (it's like a websocket monitor).
