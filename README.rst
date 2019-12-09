@@ -103,8 +103,8 @@ is sent (if the user is logged)
 Next Actions
 ------------
 
-* Add a new websocket channel to serve market data via websockets and measure the
-resulting performance.
+* Add a new websocket channel to serve market data via websockets and measure the resulting performance.
+* Add unitary tests
 
 
 Further Reading
