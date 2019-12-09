@@ -156,12 +156,12 @@ LOGGING = {
     "loggers": {
         "webapp": {
             "handlers": ["console", "file"],
-            "level": "DEBUG",
+            "level": "INFO",
             "propagate": True,
         },
         "generic": {
             "handlers": ["console", "file"],
-            "level": "DEBUG",
+            "level": "INFO",
             "propagate": True,
         }
     },

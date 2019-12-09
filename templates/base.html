@@ -19,7 +19,8 @@
             <a class="p-2 text-dark" href="{% url "logout" %}">Logout</a>
         {% endif %}
     </nav>
-    <a id="realtime" href="#" class="btn btn-secondary" data-realtime-active="False">Realtime</a>
+    {% block extra_headbar %}
+    {% endblock %}
 </div>
 <div class="container">
     <div class="row">

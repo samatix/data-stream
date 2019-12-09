@@ -1,5 +1,6 @@
 import json
 from asgiref.sync import async_to_sync
+from time import time
 import channels.layers
 from django.db import models
 from django.conf import settings
@@ -22,17 +23,17 @@ def broadcast(user, content):
 
 class Data(models.Model):
     """
-    Data stored in the ORM or anywhere else
+    Data stored in the ORM
     """
 
-    # Information Field
-    information = models.CharField(max_length=255)
+    # Instrument Field
+    instrument = models.CharField(max_length=255)
 
-    # Linear factor
-    a = models.FloatField(default=0)
+    # Quantity
+    quantity = models.FloatField(default=0)
 
-    # Value
-    x = models.FloatField(default=0)
+    # Initial Order Price
+    initial_price = models.FloatField(default=0)
 
     # User
     user = models.ForeignKey(
@@ -47,29 +48,19 @@ class Data(models.Model):
             notification_type = "data.new"
         else:
             notification_type = "data.update"
+
+        # Save the data
+        super(Data, self).save(*args, **kwargs)
+
+        # Send the opened channels
         content = {
-            'a': self.a,
-            'x': self.x,
-            'information': self.information,
-            'type': notification_type
+            'id': self.id,
+            'quantity': self.quantity,
+            'initial_price': self.initial_price,
+            'instrument': self.instrument,
+            'type': notification_type,
+            'time': time()
         }
 
         # Send notification to opened channels
         broadcast(self.user.id, content)
-        # Save the data
-        super(Data, self).save(*args, **kwargs)
-
-
-class RealtimeSettings(models.Model):
-    """
-    Realtime Settings stored in the ORM
-    """
-
-    # Information Field
-    realtime = models.BooleanField(default=True)
-
-    # User
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-    )

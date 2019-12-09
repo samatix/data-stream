@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class DataViewSet(viewsets.ModelViewSet):
     """
         Data "view" set is used as a model view set for the rest API to show the list of all the data stored.
-        The API returns the data list depending on the permission of the user:
+        The API returns the user data depending if he is authenticated
     """
     permission_classes = (permissions.DjangoModelPermissions,)
     serializer_class = serializers.DataSerializer

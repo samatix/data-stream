@@ -5,13 +5,10 @@ from .exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
-# Variable to measure the websockets latency
-latency = 0
-
 
 class DataConsumer(AsyncJsonWebsocketConsumer):
     """
-    This data consumer handles websocket connections for the users subscribing to their data.
+    This data consumer handles websocket connections for the users subscribing to updates on their data.
 
     It uses AsyncJsonWebsocketConsumer, which means all the handling functions
     must be async functions, and any sync work (like ORM access) has to be
@@ -20,12 +17,11 @@ class DataConsumer(AsyncJsonWebsocketConsumer):
     """
 
     # WebSocket event handlers
-
     async def connect(self):
         """
         Called when the websocket is handshaking as part of initial connection.
         """
-        # Are they logged in?
+        # If the issue is not logged in ?
         if self.scope["user"].is_anonymous:
             # Reject the connection
             await self.close()
@@ -40,7 +36,6 @@ class DataConsumer(AsyncJsonWebsocketConsumer):
         Called when we get a request to activate or not the realtime.
         Channels will JSON-decode the payload for us and pass it as the first argument.
         """
-        start = time()
         # Messages will have a "command" key we can switch on
         command = content.get("command", None)
         logger.debug("Command Received + " + str(content))
@@ -69,7 +64,7 @@ class DataConsumer(AsyncJsonWebsocketConsumer):
     # Command helper methods called by receive_json
     async def subscribe_to_realtime(self):
         """
-        Called by receive_json when someone sent a join command.
+        Called by receive_json when someone subscribes to realtime data.
         """
         start = time()
         logger.debug("Group Added on channel " + self.channel_name + " and group realtime_" +
@@ -83,7 +78,7 @@ class DataConsumer(AsyncJsonWebsocketConsumer):
 
     async def unsubscribe_to_realtime(self):
         """
-        Called by receive_json when someone sent a leave command.
+        Called by receive_json when someones unsubscribes from the realtime data
         """
         start = time()
         logger.debug("Group Discarded on channel " + self.channel_name + " and group realtime_" +
@@ -102,11 +97,6 @@ class DataConsumer(AsyncJsonWebsocketConsumer):
         start = time()
         # Send a message down to the client
         await self.send_json(
-            {
-                "action": "update",
-                "content": content,
-            },
+            content
         )
-        global latency
-        latency = time() - start
         logger.debug("Elapsed time to send data {}.".format(latency))
