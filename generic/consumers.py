@@ -43,10 +43,17 @@ class DataConsumer(AsyncJsonWebsocketConsumer):
             if command == "subscribe":
                 # Make them join the room
                 await self.subscribe_to_realtime()
-
+                await self.send_json(
+                    {"command": "subscribe",
+                     "status": "ok"}
+                )
             elif command == "unsubscribe":
                 # Leave the room
                 await self.unsubscribe_to_realtime()
+                await self.send_json(
+                    {"command": "unsubscribe",
+                     "status": "ok"}
+                )
         except ClientError as e:
             # Catch any errors and send it back
             await self.send_json({"error": e.code})
@@ -99,4 +106,4 @@ class DataConsumer(AsyncJsonWebsocketConsumer):
         await self.send_json(
             content
         )
-        logger.debug("Elapsed time to send data {}.".format(latency))
+        logger.debug("Elapsed time to send data {}.".format(time() - start))
